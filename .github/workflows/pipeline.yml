@@ -76,5 +76,6 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            cd ~/secure-node-demo
+            cd ~/secure-node-demo/hostelworld
+            ls -la
             bash deploy.sh
