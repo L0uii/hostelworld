@@ -1,0 +1,20 @@
+{
+    "name": "secure-node-demo",
+    "version": "1.0.0",
+    "scripts": {
+      "start": "node src/server.js",
+      "dev": "nodemon src/server.js",
+      "test": "jest --coverage",
+      "lint": "eslint ."
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "dotenv": "^16.0.3"
+    },
+    "devDependencies": {
+      "jest": "^29.5.0",
+      "supertest": "^6.3.3",
+      "eslint": "^8.40.0",
+      "nodemon": "^2.0.22"
+    }
+  }
