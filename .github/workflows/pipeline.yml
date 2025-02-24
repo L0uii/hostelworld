@@ -20,7 +20,7 @@ jobs:
           node-version: '18'
       
       - name: Install dependencies
-        run: npm ci --include=dev  # Install all dependencies, including dev dependencies
+        run: npm install  # Install all dependencies, including dev dependencies
 
       - name: Run ESLint
         run: npm run lint
