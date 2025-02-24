@@ -2,9 +2,9 @@ name: Secure Node.js Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:  # Trigger on push to any branch
   pull_request:
-    branches: [ main ]
+    branches:  # Trigger on pull request to any branch
 
 jobs:
   security-checks:
