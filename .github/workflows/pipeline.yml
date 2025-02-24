@@ -111,6 +111,8 @@ jobs:
           jf rt build-publish
 
       - name: Clean Up Docker Images
+        env:
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
         run: |
           docker rmi $IMAGE_NAME
 
