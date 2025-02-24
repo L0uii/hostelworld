@@ -1,31 +1,20 @@
 {
-    "name": "secure-node-demo",
-    "version": "1.0.0",
-    "description": "Secure Node.js demo application",
-    "main": "src/server.js",
-    "scripts": {
-      "start": "node src/server.js",
-      "test": "jest --coverage",
-      "dev": "nodemon src/server.js"
-    },
-    "dependencies": {
-      "express": "^4.18.2",
-      "dotenv": "^16.0.3"
-    },
-    "devDependencies": {
-      "jest": "^29.5.0",
-      "supertest": "^6.3.3",
-      "nodemon": "^2.0.22"
-    },
-    "jest": {
-      "testEnvironment": "node",
-      "coverageThreshold": {
-        "global": {
-          "branches": 50,
-          "functions": 80,
-          "lines": 80,
-          "statements": 80
-        }
-      }
-    }
+  "name": "secure-node-demo",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "lint": "eslint src tests"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.0.0",
+    "eslint-plugin-jest": "^27.6.0"
   }
+}

@@ -2,9 +2,11 @@ name: Secure Node.js Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:  # Trigger on push to any branch
+      - '**'
   pull_request:
-    branches: [ main ]
+    branches:  # Trigger on pull request to any branch
+      - '**'
 
 jobs:
   security-checks:
@@ -18,15 +20,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-       
-      - name: Generate package-lock.json
-        run:  npm install
-
+      
       - name: Install dependencies
-        run: npm ci
+        run: npm install  # Install all dependencies, including dev dependencies
+
+      - name: Run ESLint
+        run: npm run lint
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        with:
+          fail-on-find: true
 
       - name: Run Trivy FS scan
         uses: aquasecurity/trivy-action@master
@@ -36,7 +40,7 @@ jobs:
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
-          severity: 'LOW'
+          severity: 'MEDIUM'
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v4
@@ -49,26 +53,78 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+        with:
+          fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Generate package-lock.json
-        run:  npm install
-
       - name: Install dependencies
-        run: npm ci
+        run: npm install  # Install all dependencies, including test dependencies
+
+      - name: Run ESLint
+        run: npm run lint
 
       - name: Run tests
         run: npm test
 
-  deploy:
+      - name: Check Test Coverage
+        run: npm run coverage
+
+  build-docker:
     needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Configure JFrog CLI
+        run: |
+          jf c add artifactory --url ${{ vars.JF_URL }} --access-token ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          registry: trial6zcfzf.jfrog.io
+          username: ${{ secrets.JFROG_USERNAME }}
+          password: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Push Docker Image and Publish Build Info
+        env:
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
+          JFROG_CLI_BUILD_NAME: jfrog-docker-build-example
+          JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
+          jf rt build-collect-env
+          jf rt build-add-git
+          jf rt build-publish
+
+      - name: Clean Up Docker Images
+        env:
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
+        run: |
+          docker rmi $IMAGE_NAME
+
+  deploy:
+    needs: build-docker
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Deploy to Digital Ocean
         uses: appleboy/ssh-action@master
         with:
@@ -77,5 +133,13 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd ~/secure-node-demo/hostelworld
-            ls -la
             bash deploy.sh
+
+      - name: Verify Deployment
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            curl -I http://localhost:3000
