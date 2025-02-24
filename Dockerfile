@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (production only)
-RUN npm ci --only=production
+# RUN npm ci --only=production -- This fails because i am not running in Prod
+RUN npm install
 
 # Copy the rest of the application code to the working directory
 COPY . .
