@@ -84,7 +84,7 @@ jobs:
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: ${{ secrets.JF_URL }}          # JFrog instance URL
+          JF_URL: ${{ variable.JF_URL }}          # JFrog instance URL
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}  # JFrog access token
 
       - name: Test Artifactory Connection
@@ -95,8 +95,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: trial6zcfzf.jfrog.io
-          username: ${{ secrets.JFROG_USERNAME }}
-          password: ${{ secrets.JFROG_PASSWORD }}
+          username: luckyosakpolorisibor@gmail.com # JFrog username
+          password: ${{ secrets.JF_ACCESS_TOKEN }}
 
       - name: Build Docker Image
         env:
