@@ -84,51 +84,30 @@ jobs:
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: ${{ vars.JF_URL }}  
+          JF_URL: ${{ vars.JF_URL }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
       - name: Configure JFrog CLI
         run: |
           jf c add artifactory --url ${{ vars.JF_URL }} --access-token ${{ secrets.JF_ACCESS_TOKEN }}
 
-      - name: Test Artifactory Connection
-        run: |
-          jf rt curl -XGET /api/system/version
-
-      - name: Log in to Docker
+      - name: Docker Login
         uses: docker/login-action@v2
         with:
           registry: trial6zcfzf.jfrog.io
-          username: luckyosakpolorisibor@gmail.com # JFrog username
+          username: ${{ secrets.JFROG_USERNAME }}
           password: ${{ secrets.JF_ACCESS_TOKEN }}
-
-      - name: Build Docker Image
-        env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/artifactory/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
-        run: |
-          # Build the Docker image and tag it
-          jf docker build -t $IMAGE_NAME .
-
-      - name: Validate Docker Build
-        run: |
-          docker images
 
       - name: Push Docker Image and Publish Build Info
         env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/artifactory/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
-          JFROG_CLI_BUILD_NAME: jfrog-docker-build-example  # Build name (static value)
-          JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}  # Build number (dynamic value)
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
+          JFROG_CLI_BUILD_NAME: jfrog-docker-build-example
+          JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          # Push the Docker image to JFrog Artifactory
-          jf docker push $IMAGE_NAME
-
-          # Collect environment variables for the build
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME
           jf rt build-collect-env
-
-          # Collect VCS details from Git and add them to the build
           jf rt build-add-git
-
-          # Publish build info to JFrog Artifactory
           jf rt build-publish
 
       - name: Clean Up Docker Images
