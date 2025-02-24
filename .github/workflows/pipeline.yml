@@ -83,14 +83,14 @@ jobs:
 
       - name: Build Docker Image
         env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
+          IMAGE_NAME: trial6zcfzf.jfrog.io/artifactory/hostelworld-docker-remote/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
         run: |
           # Build the Docker image and tag it
           jf docker build -t $IMAGE_NAME .
 
       - name: Push Docker Image and Publish Build Info
         env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
+          IMAGE_NAME: trial6zcfzf.jfrog.io/artifactory/hostelworld-docker-remote/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
           JFROG_CLI_BUILD_NAME: jfrog-docker-build-example  # Build name (static value)
           JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}  # Build number (dynamic value)
         run: |
