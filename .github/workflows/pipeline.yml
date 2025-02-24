@@ -84,8 +84,12 @@ jobs:
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
         env:
-          JF_URL: ${{ env.JF_URL }}          # JFrog instance URL
-          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}  # JFrog access token
+          JF_URL: ${{ vars.JF_URL }}  
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Configure JFrog CLI
+        run: |
+          jf c add artifactory --url ${{ vars.JF_URL }} --access-token ${{ secrets.JF_ACCESS_TOKEN }}
 
       - name: Test Artifactory Connection
         run: |
