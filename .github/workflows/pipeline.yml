@@ -57,6 +57,9 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Install dependencies
+        run: npm install  # Install all dependencies, including test dependencies
+
       - name: Run ESLint
         run: npm run lint
 
