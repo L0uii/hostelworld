@@ -19,20 +19,6 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Generate package-lock.json
-        run: npm install
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Run ESLint
         run: npm run lint
 
@@ -68,51 +54,55 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Generate package-lock.json
-        run: npm install
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Run tests
         run: npm test
 
       - name: Check Test Coverage
         run: npm run coverage
 
-  deploy:
+  build-docker:
     needs: test
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_URL }}          # JFrog instance URL
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}  # JFrog access token
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Build Docker Image
+        env:
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
+        run: |
+          # Build the Docker image and tag it
+          jf docker build -t $IMAGE_NAME .
 
-      - name: Generate package-lock.json
-        run: npm install
+      - name: Push Docker Image and Publish Build Info
+        env:
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker/jfrog-docker-example-image:${{ github.run_number }}  # Image name and tag
+          JFROG_CLI_BUILD_NAME: jfrog-docker-build-example  # Build name (static value)
+          JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}  # Build number (dynamic value)
+        run: |
+          # Push the Docker image to JFrog Artifactory
+          jf docker push $IMAGE_NAME
 
-      - name: Install dependencies
-        run: npm ci
+          # Collect environment variables for the build
+          jf rt build-collect-env
+
+          # Collect VCS details from Git and add them to the build
+          jf rt build-add-git
+
+          # Publish build info to JFrog Artifactory
+          jf rt build-publish
+
+  deploy:
+    needs: build-docker
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
       - name: Deploy to Digital Ocean
         uses: appleboy/ssh-action@master
@@ -122,5 +112,4 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd ~/secure-node-demo/hostelworld
-            ls -la
             bash deploy.sh

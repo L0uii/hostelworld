@@ -1,5 +1,5 @@
-# Use a minimal base image
-FROM node:14-alpine
+# Use a minimal Node.js 18 Alpine image
+FROM node:18-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install dependencies in non-interactive mode
-RUN apk add --no-cache python3 make g++ && npm install
+# Install dependencies (production only)
+RUN npm ci --only=production
 
 # Copy the rest of the application code to the working directory
 COPY . .
@@ -17,8 +17,8 @@ COPY . .
 EXPOSE 3000
 
 # Define the command to run the application
-CMD ["npm", "start"]
+CMD ["node", "src/server.js"]
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000 || exit 1
+  CMD curl -f http://localhost:3000/health || exit 1

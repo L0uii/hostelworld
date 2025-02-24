@@ -19,21 +19,21 @@ health_check() {
     fi
 }
 
-# Check PM2 process
-pm2_check() {
-    if pm2 describe secure-node-demo > /dev/null; then
-        echo "[$(date)] PM2 process is running" >> $LOG_FILE
+# Check Docker container
+docker_check() {
+    if docker ps --filter "name=secure-node-demo" --format "{{.Status}}" | grep -q "Up"; then
+        echo "[$(date)] Docker container is running" >> $LOG_FILE
         return 0
     else
-        echo "[$(date)] PM2 process is not running" >> $LOG_FILE
+        echo "[$(date)] Docker container is not running" >> $LOG_FILE
         return 1
     fi
 }
 
 # Main monitoring logic
 main() {
-    health_check || pm2 restart secure-node-demo
-    pm2_check
+    health_check || docker restart secure-node-demo
+    docker_check
 }
 
 main
