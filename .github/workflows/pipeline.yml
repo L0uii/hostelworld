@@ -100,7 +100,7 @@ jobs:
 
       - name: Push Docker Image and Publish Build Info
         env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostel-docker-local/jfrog-docker-example-image:${{ github.run_number }}
           JFROG_CLI_BUILD_NAME: jfrog-docker-build-example
           JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}
         run: |
@@ -112,7 +112,7 @@ jobs:
 
       - name: Clean Up Docker Images
         env:
-          IMAGE_NAME: trial6zcfzf.jfrog.io/hostelworld-docker-local/jfrog-docker-example-image:${{ github.run_number }}
+          IMAGE_NAME: trial6zcfzf.jfrog.io/hostel-docker-local/jfrog-docker-example-image:${{ github.run_number }}
         run: |
           docker rmi $IMAGE_NAME
 
@@ -132,7 +132,7 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            cd ~/secure-node-demo/hostelworld
+            cd ~/secure-node-demo/hostel
             bash deploy.sh
 
       - name: Verify Deployment

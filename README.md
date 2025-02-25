@@ -73,3 +73,8 @@ Describe a plan to audit and monitor IAM policies to ensure compliance with leas
 
 **Task:**  
 Describe how you would use IaC tools like Terraform to manage, deploy, and maintain these policies.
+
+### Attempted answers
+This url point to the attempted annswers to the the Questions above
+
+- [Answers](ANSWERS.md)
