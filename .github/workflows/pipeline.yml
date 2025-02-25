@@ -132,7 +132,7 @@ jobs:
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
-            cd ~/secure-node-demo/hostel
+            cd ~/secure-node-demo/hostelworld
             bash deploy.sh
 
       - name: Verify Deployment
